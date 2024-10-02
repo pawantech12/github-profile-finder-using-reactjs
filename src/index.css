@@ -5,3 +5,7 @@
 body{
     font-family: "Space Mono", monospace;
 }
+
+.full-width{
+    width: 100%;
+}

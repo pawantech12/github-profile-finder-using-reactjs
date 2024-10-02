@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@rehype-pretty/transformers": "^0.13.2",
     "axios": "^1.7.7",
     "chart.js": "^4.4.4",
     "date-fns": "^4.1.0",
@@ -19,10 +20,19 @@
     "react-dom": "^18.3.1",
     "react-icons": "^5.3.0",
     "react-router-dom": "^6.26.2",
-    "react-syntax-highlighter": "^15.5.0"
+    "react-syntax-highlighter": "^15.5.0",
+    "rehype-document": "^7.0.3",
+    "rehype-format": "^5.0.1",
+    "rehype-pretty-code": "^0.14.0",
+    "rehype-stringify": "^10.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.1",
+    "shiki": "^1.21.0",
+    "unified": "^11.0.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
+    "@tailwindcss/typography": "^0.5.15",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",

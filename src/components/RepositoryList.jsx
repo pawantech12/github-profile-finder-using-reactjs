@@ -13,6 +13,7 @@ const RepositoryList = ({ repos, user }) => {
           <li key={repo.id} className="border-b py-3 flex flex-col gap-2">
             <Link
               to={`/repos/${user.login}/${repo.name}`}
+              state={{ repo }}
               rel="noopener noreferrer"
               className="text-blue-600"
             >
@@ -30,7 +31,7 @@ const RepositoryList = ({ repos, user }) => {
                   {repo.forks_count}
                 </span>
               </div>
-              <span className="bg-gray-200 text-neutral-800 px-2 py-1 rounded">
+              <span className="bg-gray-200 text-xs text-neutral-800 px-2 py-1 rounded">
                 {repo.language}
               </span>
             </div>

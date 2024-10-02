@@ -8,6 +8,11 @@ const Search = ({ onSearch }) => {
       onSearch(username);
     }
   };
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
 
   return (
     <div className="flex justify-center items-center my-8 rounded-lg bg-white w-[60%] border border-gray-200 mx-auto p-2 shadow-custom-blue">
@@ -16,6 +21,7 @@ const Search = ({ onSearch }) => {
         placeholder="Enter GitHub Username"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
+        onKeyDown={handleKeyDown}
         className="border-none rounded-lg p-2 text-base w-full outline-none font-medium"
       />
       <button
