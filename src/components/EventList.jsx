@@ -94,12 +94,12 @@ const EventList = ({ receivedEvents, userAvatar }) => {
               <img
                 src={actor.avatar_url}
                 alt=" avatar"
-                className="w-8 rounded-full"
+                className="w-8 h-8 rounded-full"
               />
             </figure>
             <Link
               href={`https://github.com/${payload.forkee.full_name}`}
-              className="text-blue-500"
+              className="text-blue-500 "
             >
               {payload.forkee.full_name}
             </Link>

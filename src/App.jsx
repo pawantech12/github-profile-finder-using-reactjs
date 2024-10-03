@@ -33,7 +33,7 @@ function App() {
   };
 
   return (
-    <div className="container mx-auto p-4 w-[60%]">
+    <div className="container mx-auto p-4 w-[60%] max-[798px]:w-11/12 max-[450px]:w-full">
       <h1 className="text-3xl font-bold text-center mb-8">
         GitHub Profile Finder
       </h1>

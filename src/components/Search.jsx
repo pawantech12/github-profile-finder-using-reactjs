@@ -15,7 +15,7 @@ const Search = ({ onSearch }) => {
   };
 
   return (
-    <div className="flex justify-center items-center my-8 rounded-lg bg-white w-[60%] border border-gray-200 mx-auto p-2 shadow-custom-blue">
+    <div className="flex justify-center items-center my-8 rounded-lg bg-white w-[60%] max-[798px]:w-full border border-gray-200 mx-auto p-2 shadow-custom-blue">
       <input
         type="text"
         placeholder="Enter GitHub Username"

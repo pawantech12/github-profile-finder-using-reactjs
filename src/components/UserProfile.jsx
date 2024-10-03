@@ -3,7 +3,7 @@ import React from "react";
 const UserProfile = ({ user }) => {
   return (
     <div className="bg-white shadow-custom-blue rounded-lg p-6">
-      <div className="flex items-center">
+      <div className="flex items-center max-[410px]:flex-col max-[410px]:text-center">
         <img
           src={user.avatar_url}
           alt={user.login}
@@ -16,24 +16,24 @@ const UserProfile = ({ user }) => {
       </div>
       <div className="flex flex-col mt-3">
         <p className="text-slate-500 font-medium px-3">{user.bio}</p>
-        <div className="flex gap-5 items-center bg-custom-light rounded-lg p-3 px-6 border mx-auto w-[70%] justify-between mt-5">
+        <div className="flex gap-5 items-center bg-custom-light rounded-lg p-3 px-6 border mx-auto justify-between mt-5 max-[518px]:flex-wrap max-[518px]:justify-center">
           <span className="flex flex-col gap-1 text-base text-slate-500 font-medium items-center">
             Followers
-            <span className="text-xl font-semibold text-neutral-800">
+            <span className="text-xl max-[518px]:text-lg font-semibold text-neutral-800">
               {" "}
               {user.followers}
             </span>
           </span>
           <span className="flex flex-col gap-1 text-base text-slate-500 font-medium items-center">
             Following
-            <span className="text-xl font-semibold text-neutral-800">
+            <span className="text-xl max-[518px]:text-lg font-semibold text-neutral-800">
               {" "}
               {user.following}
             </span>
           </span>
           <span className="flex flex-col gap-1 text-base text-slate-500 font-medium items-center">
             Repositories
-            <span className="text-xl font-semibold text-neutral-800">
+            <span className="text-xl max-[518px]:text-lg font-semibold text-neutral-800">
               {user.public_repos}{" "}
             </span>
           </span>

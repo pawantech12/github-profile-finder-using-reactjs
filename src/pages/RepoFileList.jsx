@@ -221,7 +221,7 @@ const RepoFileList = () => {
   }, [readmeContent]);
 
   console.log("commitMessages", commitMessages.length);
-  console.log("readme content", readmeContent);
+  // console.log("readme content", readmeContent);
 
   return (
     <div className="bg-white p-4 mx-auto w-full">
@@ -231,7 +231,7 @@ const RepoFileList = () => {
         </div>
       ) : (
         <>
-          <div className="px-24 mt-20">
+          <div className="px-24 mt-20 max-[766px]:w-full max-[766px]:px-2">
             <h2 className="text-2xl font-bold mb-4">{repoName}</h2>
 
             <p className="text-sm text-gray-600">{repo?.description}</p>
@@ -243,7 +243,7 @@ const RepoFileList = () => {
               <FaLink className="text-gray-600 w-4 h-4" />
               {repo?.homepage}
             </Link>
-            <ul className="flex items-center gap-2 mt-3">
+            <ul className="flex items-center gap-2 mt-3 flex-wrap">
               {repo?.topics.map((topic) => (
                 <li
                   key={topic}
@@ -255,15 +255,7 @@ const RepoFileList = () => {
             </ul>
 
             {/* List folders first */}
-            {currentPath && (
-              <button
-                onClick={handleGoBack}
-                className="text-gray-700 flex items-center gap-2 bg-gray-200 px-3 py-1 rounded-md"
-              >
-                <FaArrowLeftLong />
-                Go Back
-              </button>
-            )}
+
             <div className="relative flex justify-between items-center mt-8">
               <button className="flex items-center gap-1 px-3 py-1 border border-gray-200 rounded-md">
                 <FaCodeBranch className="w-4 h-4 text-gray-600" />
@@ -278,7 +270,7 @@ const RepoFileList = () => {
               </button>
               {isOpen && (
                 <div
-                  className="absolute right-0 top-10 w-96 bg-white rounded-xl border border-gray-200 py-2 px-3"
+                  className="absolute right-0 top-10 w-80 bg-white rounded-xl border border-gray-200 py-2 px-3"
                   data-aos="ease-in-out"
                 >
                   <div className="mt-3">
@@ -428,24 +420,35 @@ const RepoFileList = () => {
             </div>
             <div className="border border-gray-200 px-4 rounded-b-md">
               <ul>
+                {currentPath && (
+                  <li className="py-2">
+                    <button
+                      onClick={handleGoBack}
+                      className="text-gray-700 flex items-center gap-2  text-sm"
+                    >
+                      <FaArrowLeftLong />
+                      Go Back
+                    </button>
+                  </li>
+                )}
                 {/* Render folders first */}
                 {folders.length > 0 && (
                   <>
                     {folders.map((folder) => (
                       <li
                         key={folder.sha}
-                        className="py-2 flex justify-between items-center border-t "
+                        className="py-2 flex justify-between items-center gap-3 border-t "
                       >
                         <div className="flex items-center">
                           <button
                             onClick={() => handleFolderClick(folder.name)}
-                            className="text-gray-700 hover:underline flex items-center gap-2 text-sm"
+                            className="text-gray-700 hover:underline flex items-center gap-2 text-left text-sm "
                           >
                             <FaFolder className="text-gray-500 w-4 h-4" />
                             {folder.name}
                           </button>
                         </div>
-                        <span className="text-gray-500 ml-2 text-sm">
+                        <span className="text-gray-500 ml-2 text-sm max-[582px]:hidden">
                           {commitMessages[folder.sha] || "No commit message"}
                         </span>
                       </li>
@@ -459,20 +462,20 @@ const RepoFileList = () => {
                     {fileItems.map((file) => (
                       <li
                         key={file.sha}
-                        className="py-2 flex justify-between items-center border-t "
+                        className="py-2 flex justify-between items-center border-t max-[400px]:items-start"
                       >
                         <div className="flex items-center">
                           <button
                             onClick={() =>
                               handleFileClick(file.download_url, file.name)
                             }
-                            className="text-gray-700 hover:underline flex items-center gap-2 text-sm"
+                            className="text-gray-700 hover:underline flex items-center gap-2 text-left text-sm"
                           >
                             <FaRegFile className="text-gray-500 w-4 h-4" />
                             {file.name}
                           </button>
                         </div>
-                        <span className="text-gray-500 ml-2 text-sm">
+                        <span className="text-gray-500 ml-2 text-sm max-[582px]:hidden">
                           {commitMessages[file.sha] || "No commit message"}
                         </span>
                       </li>
@@ -493,10 +496,14 @@ const RepoFileList = () => {
               </div>
               <hr />
               <div className="px-8 py-12">
-                <div
-                  className="prose"
-                  dangerouslySetInnerHTML={{ __html: htmlContent || "" }}
-                ></div>
+                {htmlContent ? (
+                  <div
+                    className="prose overflow-x-auto"
+                    dangerouslySetInnerHTML={{ __html: htmlContent || "" }}
+                  ></div>
+                ) : (
+                  <p>No readme found.</p>
+                )}
               </div>
             </div>
           </div>
