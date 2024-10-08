@@ -64,3 +64,22 @@ export const fetchLatestCommits = async (username, repoName, filePath) => {
   const commits = await response.json();
   return commits.length > 0 ? commits[0].commit.message : null; // Return the latest commit message or null if none
 };
+
+// Updated fetchLatestCommits to use axios
+export const fetchAllCommits = async (username, repoName, filePath) => {
+  try {
+    const response = await axios.get(
+      `https://api.github.com/repos/${username}/${repoName}/commits`,
+      {
+        params: { path: filePath },
+        headers: {
+          Authorization: `token ${token}`, // Include token in headers
+        },
+      }
+    );
+    return response.data.length > 0 ? response.data : []; // Return the list of commits or an empty array if none
+  } catch (error) {
+    console.error("Error fetching commits:", error);
+    throw error; // Rethrow to handle it in the component
+  }
+};

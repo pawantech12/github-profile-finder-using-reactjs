@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import { fetchRepoContent, fetchLatestCommits } from "../helper/GithubService";
 import rehypeDocument from "rehype-document";
 import rehypeFormat from "rehype-format";
@@ -17,10 +17,7 @@ import {
   FaLink,
   FaRegFile,
 } from "react-icons/fa6";
-import { useNavigate } from "react-router-dom";
 import { IoIosTimer } from "react-icons/io";
-import { Link } from "react-router-dom";
-import { useLocation } from "react-router-dom";
 import { MdContentCopy } from "react-icons/md";
 import { GoFileZip } from "react-icons/go";
 import axios from "axios";
@@ -68,6 +65,7 @@ const RepoFileList = () => {
     setCopied(true); // Show "Copied" message
     setTimeout(() => setCopied(false), 2000); // Hide after 2 seconds
   };
+
   const handleDownload = () => {
     const downloadUrl = `https://github.com/${username}/${repoName}/archive/refs/heads/${repo.default_branch}.zip`;
     window.open(downloadUrl, "_blank");
@@ -76,59 +74,83 @@ const RepoFileList = () => {
   useEffect(() => {
     const fetchFiles = async () => {
       setLoading(true);
-      const filesData = await fetchRepoContent(username, repoName, currentPath);
-      setFiles(filesData);
+      try {
+        const filesData = await fetchRepoContent(
+          username,
+          repoName,
+          currentPath
+        );
+        setFiles(filesData);
 
-      // Fetch latest commit messages for files
-      const commitMap = {};
-      for (const file of filesData) {
-        if (file.type === "file") {
-          const latestCommit = await fetchLatestCommits(
-            username,
-            repoName,
-            file.path
-          );
-          commitMap[file.sha] = latestCommit;
-        } else if (file.type === "dir") {
-          // For folders, get files inside the folder to fetch commits
-          const folderFiles = await fetchRepoContent(
-            username,
-            repoName,
-            `${currentPath}/${file.name}`
-          );
-          const latestCommitsInFolder = await Promise.all(
-            folderFiles.map(async (folderFile) => {
-              return await fetchLatestCommits(
-                username,
-                repoName,
-                folderFile.path
-              );
-            })
-          );
-          // Find the latest commit message from the folder's files
-          const latestCommitMessage = latestCommitsInFolder
-            .filter(Boolean)
-            .pop(); // Get the last truthy value
-          commitMap[file.sha] = latestCommitMessage; // Store the latest commit message for the folder
+        // Fetch latest commit messages for files
+        const commitMap = {};
+        for (const file of filesData) {
+          if (file.type === "file") {
+            const latestCommit = await fetchLatestCommits(
+              username,
+              repoName,
+              file.path
+            );
+            commitMap[file.sha] = latestCommit;
+          } else if (file.type === "dir") {
+            // For folders, get files inside the folder to fetch commits
+            const folderFiles = await fetchRepoContent(
+              username,
+              repoName,
+              `${currentPath}/${file.name}`
+            );
+            const latestCommitsInFolder = await Promise.all(
+              folderFiles.map(async (folderFile) => {
+                return await fetchLatestCommits(
+                  username,
+                  repoName,
+                  folderFile.path
+                );
+              })
+            );
+            // Find the latest commit message from the folder's files
+            const latestCommitMessage = latestCommitsInFolder
+              .filter(Boolean)
+              .pop(); // Get the last truthy value
+            commitMap[file.sha] = latestCommitMessage; // Store the latest commit message for the folder
+          }
         }
+        setCommitMessages(commitMap);
+      } catch (error) {
+        console.error("Error fetching files or commits:", error);
+      } finally {
+        setLoading(false);
       }
-      setCommitMessages(commitMap);
-      setLoading(false);
     };
+
     const fetchReadme = async () => {
+      setLoading(true);
       try {
         const response = await axios.get(
           `https://api.github.com/repos/${username}/${repoName}/readme`,
           {
             headers: {
-              // Accept: "application/vnd.github.v3.raw", // To get the raw content
               Authorization: `token ${
                 import.meta.env.VITE_APP_GITHUB_ACCESS_TOKEN
               }`,
+              Accept: "application/vnd.github.v3.raw", // Ensure raw content is returned
             },
           }
         );
-        setReadmeContent(response.data);
+
+        // Decode Base64 content
+        let decodedContent = "";
+        if (response.data && response.data.content) {
+          decodedContent = atob(response.data.content.replace(/\s/g, ""));
+        } else if (response.data && response.data.download_url) {
+          // If 'content' is not available, fetch the raw README directly
+          const rawResponse = await axios.get(response.data.download_url);
+          decodedContent = rawResponse.data;
+        } else {
+          console.warn("No content found in README response.");
+        }
+
+        setReadmeContent(decodedContent);
       } catch (error) {
         console.error("Error fetching README:", error);
       } finally {
@@ -136,27 +158,33 @@ const RepoFileList = () => {
       }
     };
 
-    fetchReadme();
-
     const fetchCommits = async () => {
-      const totalCommits = await fetch(
-        `https://api.github.com/repos/${username}/${repoName}/commits`,
-        {
-          headers: {
-            Authorization: `token ${
-              import.meta.env.VITE_APP_GITHUB_ACCESS_TOKEN
-            }`,
-          },
+      try {
+        const totalCommitsResponse = await fetch(
+          `https://api.github.com/repos/${username}/${repoName}/commits`,
+          {
+            headers: {
+              Authorization: `token ${
+                import.meta.env.VITE_APP_GITHUB_ACCESS_TOKEN
+              }`,
+            },
+          }
+        );
+        if (!totalCommitsResponse.ok) {
+          throw new Error("Failed to fetch commits");
         }
-      );
-      const commits = await totalCommits.json();
-      console.log("commit info", commits);
-
-      setTotalCommits(commits);
+        const commits = await totalCommitsResponse.json();
+        console.log("commit info", commits);
+        setTotalCommits(commits);
+      } catch (error) {
+        console.error("Error fetching total commits:", error);
+      }
     };
-    fetchCommits();
 
+    fetchReadme();
+    fetchCommits();
     fetchFiles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username, repoName, currentPath]);
 
   const handleFolderClick = (folderName) => {
@@ -164,6 +192,7 @@ const RepoFileList = () => {
       prevPath ? `${prevPath}/${folderName}` : folderName
     );
   };
+
   console.log("totalcommits", totalCommits);
 
   const handleFileClick = async (fileUrl, fileName) => {
@@ -172,14 +201,18 @@ const RepoFileList = () => {
     const fileExtension = fileName.split(".").pop().toLowerCase();
     const language = extensionToLanguageMap[fileExtension] || "plaintext";
 
-    const response = await fetch(fileUrl);
-    const content = await response.text();
+    try {
+      const response = await fetch(fileUrl);
+      const content = await response.text();
 
-    navigate("/file-viewer", {
-      state: { fileContent: content, fileName, fileLanguage: language },
-    });
-
-    setLoading(false);
+      navigate("/file-viewer", {
+        state: { fileContent: content, fileName, fileLanguage: language },
+      });
+    } catch (error) {
+      console.error("Error fetching file content:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoBack = () => {
@@ -206,13 +239,17 @@ const RepoFileList = () => {
           transformers: [
             transformerCopyButton({
               visibility: "always",
-              feedbackDuration: 3_000,
+              feedbackDuration: 3000,
             }),
           ],
         });
 
-      const htmlContent = (await processor.process(readmeContent)).toString();
-      setHtmlContent(htmlContent);
+      try {
+        const processedContent = await processor.process(readmeContent);
+        setHtmlContent(processedContent.toString());
+      } catch (error) {
+        console.error("Error processing README content:", error);
+      }
     };
 
     if (readmeContent) {
@@ -220,8 +257,19 @@ const RepoFileList = () => {
     }
   }, [readmeContent]);
 
-  console.log("commitMessages", commitMessages.length);
-  // console.log("readme content", readmeContent);
+  console.log("commitMessages", Object.keys(commitMessages).length);
+  console.log("readme content", readmeContent);
+
+  const truncateMessage = (message) => {
+    console.log("message", message);
+
+    // Check if message is defined and is a string
+    if (typeof message === "string") {
+      return message.length > 100 ? message.slice(0, 60) + "..." : message;
+    } else {
+      return ""; // Return an empty string or a default message
+    }
+  };
 
   return (
     <div className="bg-white p-4 mx-auto w-full">
@@ -235,14 +283,16 @@ const RepoFileList = () => {
             <h2 className="text-2xl font-bold mb-4">{repoName}</h2>
 
             <p className="text-sm text-gray-600">{repo?.description}</p>
-            <Link
-              to={repo?.homepage}
-              target="_blank"
-              className="flex items-center gap-1 hover:text-blue-400 text-sm mt-2"
-            >
-              <FaLink className="text-gray-600 w-4 h-4" />
-              {repo?.homepage}
-            </Link>
+            {repo.homepage && (
+              <Link
+                to={repo?.homepage}
+                target="_blank"
+                className="flex items-center gap-1 hover:text-blue-400 text-sm mt-2"
+              >
+                <FaLink className="text-gray-600 w-4 h-4" />
+                {repo?.homepage}
+              </Link>
+            )}
             <ul className="flex items-center gap-2 mt-3 flex-wrap">
               {repo?.topics.map((topic) => (
                 <li
@@ -413,10 +463,14 @@ const RepoFileList = () => {
               ) : (
                 <div>No commits found.</div>
               )}
-              <span className="text-sm flex items-center gap-1 bg-white text-gray-700 px-3 py-1 rounded-md">
-                <IoIosTimer className="w-5 h-5" />
-                {totalCommits?.length || 0} commits
-              </span>
+              <Link
+                to={`/repos/${username}/${repoName}/commits/${currentPath}`}
+              >
+                <span className="text-sm flex items-center gap-1 bg-white text-gray-700 px-3 py-1 rounded-md">
+                  <IoIosTimer className="w-5 h-5" />
+                  {totalCommits?.length || 0} commits
+                </span>
+              </Link>
             </div>
             <div className="border border-gray-200 px-4 rounded-b-md">
               <ul>
@@ -449,7 +503,8 @@ const RepoFileList = () => {
                           </button>
                         </div>
                         <span className="text-gray-500 ml-2 text-sm max-[582px]:hidden">
-                          {commitMessages[folder.sha] || "No commit message"}
+                          {truncateMessage(commitMessages[folder?.sha]) ||
+                            "No commit message"}
                         </span>
                       </li>
                     ))}
@@ -476,7 +531,8 @@ const RepoFileList = () => {
                           </button>
                         </div>
                         <span className="text-gray-500 ml-2 text-sm max-[582px]:hidden">
-                          {commitMessages[file.sha] || "No commit message"}
+                          {truncateMessage(commitMessages[file?.sha]) ||
+                            "No commit message"}
                         </span>
                       </li>
                     ))}
@@ -489,23 +545,25 @@ const RepoFileList = () => {
                 )}
               </ul>
             </div>
-            <div className="w-full mt-5 border border-gray-200 rounded-md">
-              <div className="px-4 py-3 flex items-center gap-1">
-                <LiaReadme className="w-5 h-5" />
-                <span className="uppercase text-sm">readme</span>
+            {readmeContent && (
+              <div className="w-full mt-5 border border-gray-200 rounded-md">
+                <div className="px-4 py-3 flex items-center gap-1">
+                  <LiaReadme className="w-5 h-5" />
+                  <span className="uppercase text-sm">README</span>
+                </div>
+                <hr />
+                <div className="px-8 py-12">
+                  {htmlContent ? (
+                    <div
+                      className="prose overflow-x-auto"
+                      dangerouslySetInnerHTML={{ __html: htmlContent || "" }}
+                    ></div>
+                  ) : (
+                    <p>No README found.</p>
+                  )}
+                </div>
               </div>
-              <hr />
-              <div className="px-8 py-12">
-                {htmlContent ? (
-                  <div
-                    className="prose overflow-x-auto"
-                    dangerouslySetInnerHTML={{ __html: htmlContent || "" }}
-                  ></div>
-                ) : (
-                  <p>No readme found.</p>
-                )}
-              </div>
-            </div>
+            )}
           </div>
         </>
       )}

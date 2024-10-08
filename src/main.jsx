@@ -6,6 +6,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { RouterProvider } from "react-router-dom";
 import RepoFileList from "./pages/RepoFileList.jsx";
 import FileViewer from "./pages/FileViewer.jsx";
+import CommitPage from "./pages/CommitPage.jsx";
 
 const router = createBrowserRouter([
   {
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
   {
     path: "/repos/:username/:repoName",
     element: <RepoFileList />,
+  },
+  {
+    path: "/repos/:username/:repoName/commits/:filePath?",
+    element: <CommitPage />,
   },
   {
     path: "/file-viewer",
