@@ -18,7 +18,7 @@ const router = createBrowserRouter([
     element: <RepoFileList />,
   },
   {
-    path: "/repos/:username/:repoName/commits/:filePath?",
+    path: "/repos/:username/:repoName/commits",
     element: <CommitPage />,
   },
   {

@@ -59,6 +59,7 @@ const RepoFileList = () => {
   console.log("Repo details ", repo);
   const [copied, setCopied] = useState(false); // State to show the copied message
   const [readmeContent, setReadmeContent] = useState("");
+  const [demoVideoUrl, setDemoVideoUrl] = useState("");
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
@@ -137,13 +138,20 @@ const RepoFileList = () => {
             },
           }
         );
+        console.log("response", response); // For debugging
 
-        // Decode Base64 content
         let decodedContent = "";
-        if (response.data && response.data.content) {
+
+        // Case 1: Raw content is directly available in response.data (as a string)
+        if (typeof response.data === "string") {
+          decodedContent = response.data;
+        }
+        // Case 2: Content is Base64-encoded in response.data.content
+        else if (response.data && response.data.content) {
           decodedContent = atob(response.data.content.replace(/\s/g, ""));
-        } else if (response.data && response.data.download_url) {
-          // If 'content' is not available, fetch the raw README directly
+        }
+        // Case 3: Fallback, try fetching the raw file from the download URL
+        else if (response.data && response.data.download_url) {
           const rawResponse = await axios.get(response.data.download_url);
           decodedContent = rawResponse.data;
         } else {
@@ -245,8 +253,17 @@ const RepoFileList = () => {
         });
 
       try {
+        // Process the README content
         const processedContent = await processor.process(readmeContent);
+
+        // Set HTML content
         setHtmlContent(processedContent.toString());
+
+        // Extract the demo video URL (update this regex based on how it's formatted)
+        const videoMatch = readmeContent.match(/Video Demo\s+(\S+)/);
+        if (videoMatch && videoMatch[1]) {
+          setDemoVideoUrl(videoMatch[1]); // Assuming the URL is the first captured group
+        }
       } catch (error) {
         console.error("Error processing README content:", error);
       }
@@ -257,8 +274,8 @@ const RepoFileList = () => {
     }
   }, [readmeContent]);
 
-  console.log("commitMessages", Object.keys(commitMessages).length);
-  console.log("readme content", readmeContent);
+  // console.log("commitMessages", Object.keys(commitMessages).length);
+  // console.log("readme content", readmeContent);
 
   const truncateMessage = (message) => {
     console.log("message", message);
@@ -463,10 +480,8 @@ const RepoFileList = () => {
               ) : (
                 <div>No commits found.</div>
               )}
-              <Link
-                to={`/repos/${username}/${repoName}/commits/${currentPath}`}
-              >
-                <span className="text-sm flex items-center gap-1 bg-white text-gray-700 px-3 py-1 rounded-md">
+              <Link to={`/repos/${username}/${repoName}/commits`}>
+                <span className="text-sm flex items-center gap-1 bg-white text-gray-700 px-3 py-1 rounded-md hover:bg-gray-400 hover:text-white">
                   <IoIosTimer className="w-5 h-5" />
                   {totalCommits?.length || 0} commits
                 </span>
@@ -478,7 +493,7 @@ const RepoFileList = () => {
                   <li className="py-2">
                     <button
                       onClick={handleGoBack}
-                      className="text-gray-700 flex items-center gap-2  text-sm"
+                      className="text-gray-700 flex items-center gap-2  text-sm hover:underline"
                     >
                       <FaArrowLeftLong />
                       Go Back
@@ -545,6 +560,7 @@ const RepoFileList = () => {
                 )}
               </ul>
             </div>
+
             {readmeContent && (
               <div className="w-full mt-5 border border-gray-200 rounded-md">
                 <div className="px-4 py-3 flex items-center gap-1">
@@ -553,9 +569,15 @@ const RepoFileList = () => {
                 </div>
                 <hr />
                 <div className="px-8 py-12">
+                  {/* Render Demo Video if URL is available */}
+                  {demoVideoUrl && (
+                    <div>
+                      <video src={demoVideoUrl} controls></video>
+                    </div>
+                  )}
                   {htmlContent ? (
                     <div
-                      className="prose overflow-x-auto"
+                      className="prose overflow-x-auto mt-5"
                       dangerouslySetInnerHTML={{ __html: htmlContent || "" }}
                     ></div>
                   ) : (

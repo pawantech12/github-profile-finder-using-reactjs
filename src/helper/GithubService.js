@@ -65,21 +65,63 @@ export const fetchLatestCommits = async (username, repoName, filePath) => {
   return commits.length > 0 ? commits[0].commit.message : null; // Return the latest commit message or null if none
 };
 
-// Updated fetchLatestCommits to use axios
-export const fetchAllCommits = async (username, repoName, filePath) => {
+export const fetchAllCommits = async (username, repoName) => {
+  const response = await fetch(
+    `https://api.github.com/repos/${username}/${repoName}/commits`
+  );
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+  const data = await response.json();
+  return data;
+};
+
+export const fetchUserContributions = async (username) => {
   try {
-    const response = await axios.get(
-      `https://api.github.com/repos/${username}/${repoName}/commits`,
+    const reposResponse = await axios.get(
+      `${API_BASE_URL}/users/${username}/repos`,
       {
-        params: { path: filePath },
         headers: {
-          Authorization: `token ${token}`, // Include token in headers
+          Authorization: `token ${token}`,
         },
       }
     );
-    return response.data.length > 0 ? response.data : []; // Return the list of commits or an empty array if none
+
+    const repositories = reposResponse.data;
+
+    // Prepare an object to count contributions by date
+    const contributionsByDate = {};
+
+    for (const repo of repositories) {
+      const commitsResponse = await axios.get(
+        `${API_BASE_URL}/repos/${username}/${repo.name}/commits?author=${username}`,
+        {
+          headers: {
+            Authorization: `token ${token}`,
+          },
+        }
+      );
+
+      const commits = commitsResponse.data;
+
+      // Count contributions by date
+      commits.forEach((commit) => {
+        const date = commit.commit.author.date.split("T")[0]; // Get date only
+        contributionsByDate[date] = (contributionsByDate[date] || 0) + 1; // Increment count
+      });
+    }
+
+    // Convert contributionsByDate object to an array
+    const contributions = Object.entries(contributionsByDate).map(
+      ([date, count]) => ({ date, count })
+    );
+
+    // Sort contributions by date
+    contributions.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    return contributions; // Return the formatted contributions
   } catch (error) {
-    console.error("Error fetching commits:", error);
-    throw error; // Rethrow to handle it in the component
+    console.error("Error fetching user contributions", error);
+    return []; // Return an empty array in case of error
   }
 };

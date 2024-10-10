@@ -1,6 +1,7 @@
 import React from "react";
+import ContributionChart from "./ContributionChart"; // Import the new chart component
 
-const UserProfile = ({ user }) => {
+const UserProfile = ({ user, contributions }) => {
   return (
     <div className="bg-white shadow-custom-blue rounded-lg p-6">
       <div className="flex items-center max-[410px]:flex-col max-[410px]:text-center">
@@ -37,6 +38,19 @@ const UserProfile = ({ user }) => {
               {user.public_repos}{" "}
             </span>
           </span>
+        </div>
+      </div>
+
+      {/* Add the ContributionChart below the user details */}
+      <div className="mt-6">
+        <h2 className="text-xl font-bold text-neutral-700">Contributions</h2>
+
+        {/* Wrap the chart in a container with overflow-x: auto */}
+        <div className="overflow-x-auto">
+          <div className="min-w-[600px]">
+            {/* Adjust min-width as needed */}
+            <ContributionChart contributions={contributions} />
+          </div>
         </div>
       </div>
     </div>

@@ -2,7 +2,11 @@ import React, { useState } from "react";
 import Search from "./components/Search";
 import UserProfile from "./components/UserProfile";
 import RepositoryList from "./components/RepositoryList";
-import { fetchUserProfile, fetchUserRepos } from "./helper/GithubService";
+import {
+  fetchUserContributions,
+  fetchUserProfile,
+  fetchUserRepos,
+} from "./helper/GithubService";
 import EventList from "./components/EventList";
 
 function App() {
@@ -12,6 +16,7 @@ function App() {
   const [receivedEvents, setReceivedEvents] = useState([]);
   const [searchAttempted, setSearchAttempted] = useState(false); // New state
   const [loading, setLoading] = useState(false);
+  const [contributions, setContributions] = useState([]);
 
   const handleSearch = async (username) => {
     setSearchAttempted(true); // Mark that a search has been performed
@@ -21,6 +26,9 @@ function App() {
 
     if (userProfile) {
       setUser(userProfile);
+      // Fetch contributions and set state
+      const contributionsData = await fetchUserContributions(username);
+      setContributions(contributionsData);
       const eventsResponse = await fetch(userProfile.received_events_url);
       const eventsData = await eventsResponse.json();
       setReceivedEvents(eventsData);
@@ -44,7 +52,7 @@ function App() {
         </div>
       ) : user ? (
         <>
-          <UserProfile user={user} />
+          <UserProfile user={user} contributions={contributions} />
           <div className="mt-5">
             {/* Tab Navigation */}
             <div className="flex">
