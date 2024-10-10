@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import propTypes from "prop-types";
 
 const Search = ({ onSearch }) => {
   const [username, setUsername] = useState("");
@@ -32,6 +33,10 @@ const Search = ({ onSearch }) => {
       </button>
     </div>
   );
+};
+
+Search.propTypes = {
+  onSearch: propTypes.func.isRequired,
 };
 
 export default Search;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import { fetchRepoContent, fetchLatestCommits } from "../helper/GithubService";
 import rehypeDocument from "rehype-document";

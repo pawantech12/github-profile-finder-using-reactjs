@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Search from "./components/Search";
 import UserProfile from "./components/UserProfile";
 import RepositoryList from "./components/RepositoryList";
@@ -19,24 +19,34 @@ function App() {
   const [contributions, setContributions] = useState([]);
 
   const handleSearch = async (username) => {
-    setSearchAttempted(true); // Mark that a search has been performed
+    setSearchAttempted(true);
     setLoading(true);
-    const userProfile = await fetchUserProfile(username);
-    console.log("userProfile", userProfile);
 
-    if (userProfile) {
-      setUser(userProfile);
-      // Fetch contributions and set state
-      const contributionsData = await fetchUserContributions(username);
-      setContributions(contributionsData);
-      const eventsResponse = await fetch(userProfile.received_events_url);
-      const eventsData = await eventsResponse.json();
-      setReceivedEvents(eventsData);
-      const userRepos = await fetchUserRepos(username);
-      setRepos(userRepos);
-    } else {
-      setUser(null); // If no user profile is found
+    try {
+      const [userProfile, contributionsData, userReposResponse] =
+        await Promise.all([
+          fetchUserProfile(username),
+          fetchUserContributions(username),
+          fetchUserRepos(username),
+        ]);
+
+      if (userProfile) {
+        setUser(userProfile);
+        setContributions(contributionsData);
+        setRepos(userReposResponse);
+
+        // Fetch events separately
+        const eventsResponse = await fetch(userProfile.received_events_url);
+        const eventsData = await eventsResponse.json();
+        setReceivedEvents(eventsData);
+      } else {
+        setUser(null);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setUser(null);
     }
+
     setLoading(false);
   };
 

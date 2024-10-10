@@ -1,5 +1,4 @@
-import React from "react";
-
+import PropTypes from "prop-types";
 const Tooltip = ({ text, children }) => {
   return (
     <div className="relative group">
@@ -9,6 +8,10 @@ const Tooltip = ({ text, children }) => {
       </div>
     </div>
   );
+};
+Tooltip.propTypes = {
+  text: PropTypes.string.isRequired,
+  children: PropTypes.node.isRequired,
 };
 
 export default Tooltip;

@@ -1,5 +1,4 @@
 import { formatDistanceToNow } from "date-fns";
-import React from "react";
 import {
   FaCodeBranch,
   FaCodeCommit,
@@ -8,6 +7,7 @@ import {
   FaStar,
 } from "react-icons/fa6";
 import { Link } from "react-router-dom";
+import propTypes from "prop-types";
 
 const EventList = ({ receivedEvents, userAvatar }) => {
   // Destructuring event properties
@@ -239,6 +239,32 @@ const EventList = ({ receivedEvents, userAvatar }) => {
         </li>
       );
   }
+};
+EventList.propTypes = {
+  receivedEvents: propTypes.shape({
+    type: propTypes.string.isRequired,
+    created_at: propTypes.string.isRequired,
+    repo: propTypes.shape({
+      name: propTypes.string.isRequired,
+    }).isRequired,
+    actor: propTypes.shape({
+      avatar_url: propTypes.string.isRequired,
+      login: propTypes.string.isRequired,
+    }).isRequired,
+    payload: propTypes.shape({
+      size: propTypes.number,
+      commits: propTypes.arrayOf(
+        propTypes.shape({
+          url: propTypes.string.isRequired,
+          message: propTypes.string.isRequired,
+        })
+      ),
+      forkee: propTypes.shape({
+        full_name: propTypes.string.isRequired,
+      }),
+    }).isRequired,
+  }).isRequired,
+  userAvatar: propTypes.string.isRequired,
 };
 
 export default EventList;

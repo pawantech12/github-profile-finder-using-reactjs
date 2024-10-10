@@ -1,5 +1,5 @@
-import React from "react";
 import ContributionChart from "./ContributionChart"; // Import the new chart component
+import PropTypes from "prop-types";
 
 const UserProfile = ({ user, contributions }) => {
   return (
@@ -56,5 +56,16 @@ const UserProfile = ({ user, contributions }) => {
     </div>
   );
 };
-
+UserProfile.propTypes = {
+  user: PropTypes.shape({
+    avatar_url: PropTypes.string.isRequired,
+    login: PropTypes.string.isRequired,
+    name: PropTypes.string,
+    bio: PropTypes.string,
+    followers: PropTypes.number.isRequired,
+    following: PropTypes.number.isRequired,
+    public_repos: PropTypes.number.isRequired,
+  }).isRequired,
+  contributions: PropTypes.array.isRequired, // Adjust the type if needed
+};
 export default UserProfile;

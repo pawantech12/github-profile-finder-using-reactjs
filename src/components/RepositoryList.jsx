@@ -1,7 +1,6 @@
-import React from "react";
 import { FaCodeBranch, FaStar } from "react-icons/fa6";
 import { Link } from "react-router-dom";
-
+import propTypes from "prop-types";
 const RepositoryList = ({ repos, user }) => {
   console.log("repos", repos);
 
@@ -40,6 +39,13 @@ const RepositoryList = ({ repos, user }) => {
       </ul>
     </div>
   );
+};
+
+RepositoryList.propTypes = {
+  repos: propTypes.array.isRequired,
+  user: propTypes.shape({
+    login: propTypes.string.isRequired,
+  }).isRequired,
 };
 
 export default RepositoryList;
