@@ -1,6 +1,8 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { Line } from "react-chartjs-2";
-import propTypes from "prop-types";
+import Chart from "chart.js/auto"; // Import Chart.js to enable auto registration of components
+import PropTypes from "prop-types";
+
 const ContributionChart = ({ contributions }) => {
   const chartRef = useRef(null);
 
@@ -41,7 +43,6 @@ const ContributionChart = ({ contributions }) => {
 };
 
 ContributionChart.propTypes = {
-  contributions: propTypes.array.isRequired,
+  contributions: PropTypes.array.isRequired,
 };
-
 export default ContributionChart;
